@@ -1,56 +1,82 @@
-# Barz Player — portfólio técnico
+# Barz Player
 
-Aplicativo Flutter para reprodução contínua de mídia em telas Android, com sincronização de playlist, armazenamento local e recuperação automática de falhas.
+Aplicativo Flutter para reproduzir imagens e vídeos continuamente em telas Android, mantendo uma fila local utilizável quando a conexão oscila.
+
+> Demonstração independente de portfólio. Não contém servidor, credenciais, dados de clientes, endereços internos nem histórico do projeto privado.
 
 ## Problema
 
-Telas de comunicação digital precisam continuar exibindo conteúdo mesmo quando a rede oscila, um arquivo falha ou o aplicativo é reiniciado. A solução também precisa limitar downloads simultâneos, preservar espaço em disco e reportar o estado atual sem interromper a reprodução.
+Uma tela de comunicação digital precisa baixar conteúdo, preservar arquivos válidos, recuperar-se de falhas e continuar reproduzindo sem exigir intervenção constante. Telemetria e sincronização não podem interromper o fluxo principal.
 
-## Solução
+## Solução implementada
 
-O aplicativo recebe um endereço configurado pelo operador, consulta a playlist, baixa os arquivos necessários para uma pasta privada e reproduz a fila local. A camada de reprodução aplica timeouts, repetição controlada, descarte de eventos antigos e telemetria assíncrona.
+O operador informa host, porta e canal. O Player consulta uma playlist demonstrativa, valida os itens, baixa arquivos para a pasta privada do aplicativo e reproduz a fila local. Sincronização, telemetria e eventos pendentes são tratados de forma assíncrona e com limites explícitos.
 
-## Principais recursos
+## Tecnologias
 
-- reprodução de vídeo e imagem em tela cheia;
+- Flutter e Dart;
+- plugins Android para vídeo, armazenamento, preferências, informações do pacote e inicialização após boot;
+- cliente HTTP com timeouts e validação de URL;
+- testes de serviços, modelos, armazenamento, reprodução e widgets.
+
+## Funcionalidades demonstradas
+
+- reprodução de imagens e vídeos em tela cheia;
 - cache local com nomes de arquivo normalizados;
-- sincronização periódica sem sobreposição de execuções;
+- downloads com progresso e limite de concorrência;
+- sincronização periódica sem execuções sobrepostas;
 - recuperação de mídia inválida ou indisponível;
-- telemetria de estado sem bloquear a interface;
-- inicialização após o boot, quando habilitada;
-- testes de API, download, armazenamento, fila e widgets.
+- fila local de eventos de reprodução com limite e reenvio;
+- telemetria de estado em modo best-effort;
+- inicialização após o boot quando habilitada.
 
-## Arquitetura
+## Arquitetura e decisões
 
-`lib/models` representa a mídia. `lib/services` concentra API, download, persistência, telemetria e coordenação da fila. `lib/player` mantém o ciclo de vida do player. `lib/main.dart` reúne configuração e navegação.
+- `lib/models` representa itens de mídia;
+- `lib/services` concentra API, download, armazenamento, telemetria e fila de eventos;
+- `lib/player` controla o ciclo de vida de imagens e vídeos;
+- `lib/main.dart` reúne configuração e navegação.
+
+O pacote Android desta edição é `dev.juniorbarz.portfolio.player`, separado de instalações privadas.
+
+## Contrato demonstrativo
+
+O cliente consulta `GET /api/screens/{canal}/playlist` e envia status e eventos aos caminhos correspondentes. Esse contrato pertence somente a esta demonstração do Player.
+
+O repositório **Barz Media API** é outro exemplo independente de portfólio. Nesta fase, os dois projetos não são apresentados como uma integração end-to-end nem como contratos mutuamente compatíveis.
 
 ## Como executar
 
-1. Instale Flutter 3.41.6 ou compatível e o Android SDK.
-2. Execute `flutter pub get`.
-3. Rode `flutter test` e `flutter analyze`.
-4. Inicie com `flutter run` em um dispositivo Android.
-5. Informe host, porta e canal de um ambiente de demonstração controlado por você; nenhum valor vem preenchido.
+Pré-requisitos: Flutter 3.41.6 ou compatível, Android SDK e dispositivo ou emulador Android.
 
-O cliente valida esses três campos e consulta `GET /api/screens/{canal}/playlist`. Os caminhos de status e reprodução seguem o mesmo contrato público. O pacote Android desta edição usa exclusivamente `dev.juniorbarz.portfolio.player`, evitando colisão com qualquer instalação privada.
+```bash
+flutter pub get
+flutter analyze
+flutter test
+flutter run
+```
+
+Na tela inicial, informe host, porta e canal de um serviço demonstrativo sob seu controle. Nenhum endereço vem preenchido.
+
+## Testes e validação
+
+Os testes cobrem validação de endpoints, parsing da playlist, download, armazenamento, duração de mídia, fila de eventos, telemetria e interface inicial. O exportador de portfólio publica somente os arquivos aprovados por manifesto e hash.
 
 ## Segurança e privacidade
 
-Esta edição não contém credenciais, endereços internos, dados de clientes, histórico do projeto privado nem infraestrutura empresarial. Os testes usam endereços reservados para documentação. O tráfego HTTP em texto claro permanece habilitado apenas para demonstrar integração com uma rede local controlada; em produção, deve ser substituído por HTTPS autenticado.
+Os testes usam endereços reservados para documentação. URLs absolutas de mídia precisam usar HTTPS. O aplicativo ainda permite HTTP em texto claro para conversar com um serviço local controlado; isso é uma concessão da demonstração e não um padrão adequado para produção.
 
 ## Limitações
 
-- não inclui servidor, painel administrativo ou conteúdo real;
-- não é um sistema de gerenciamento de dispositivos;
-- a inicialização após boot depende das regras da versão do Android;
-- a compilação de release deste exemplo não deve usar assinatura de debug;
-- o endpoint informado pelo usuário deve implementar o contrato demonstrativo descrito acima;
-- esta edição aceita HTTP local para a demonstração, mas URLs absolutas de mídia precisam usar HTTPS.
+- não inclui servidor, painel administrativo, conteúdo real ou gerenciamento de dispositivos;
+- o contrato HTTP é ilustrativo e não foi validado contra o Backend deste portfólio;
+- não há autenticação, autorização, criptografia de aplicação ou garantia de entrega exatamente uma vez;
+- inicialização após boot depende da versão e das políticas de energia do Android;
+- a configuração de release usa assinatura de debug para avaliação local e não deve ser distribuída;
+- resiliência local não equivale a operação validada em produção.
 
-## Minha participação
+## Minha participação e direitos
 
-Projeto de autoria própria: arquitetura Flutter, integração HTTP, cache, fila resiliente, telemetria, automação Android e testes.
+Arquitetura Flutter, integração HTTP, cache, fila resiliente, telemetria, automação Android, testes e documentação: Junior Barz.
 
-## Uso e contribuições
-
-Código publicado somente para avaliação de portfólio. Não aceita contribuições. Consulte [PORTFOLIO_NOTICE.md](PORTFOLIO_NOTICE.md).
+Código apresentado somente para leitura e avaliação profissional. Não aceita contribuições. Consulte [PORTFOLIO_NOTICE.md](PORTFOLIO_NOTICE.md).
